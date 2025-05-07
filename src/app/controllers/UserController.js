@@ -4,32 +4,35 @@ import User from "../models/User";
 class UserController {
   async store(req, res) {
     try {
-      const { nome, email, senha, admin } = req.body;
+      // Desestruturação correta com os mesmos nomes usados no Model
+      const { name, email, password, admin } = req.body;
 
-      // Verificando se o usuário já existe
+      // Verificando se o usuário já existe no banco
       const userExists = await User.findOne({ where: { email } });
       if (userExists) {
         return res.status(400).json({ error: "Usuário já existe" });
       }
 
-      // Criptografando a senha com bcrypt
-      const hashedPassword = await bcrypt.hash(senha, 8); // O número 8 é o saltRounds
+      // Criptografando a senha antes de salvar
+      const hashedPassword = await bcrypt.hash(password, 8); // 8 salt rounds
 
-      // Criando o novo usuário
+      // Criando o novo usuário com os campos corretos conforme definidos no Model
       const user = await User.create({
-        nome,
-        email,
-        senha: hashedPassword,
-        admin,
+        name, // corresponde ao campo 'name' no model
+        email, // corresponde ao campo 'email' no model
+        password_hash: hashedPassword, // corresponde ao campo 'password_hash'
+        admin, // corresponde ao campo 'admin' no model
       });
 
+      // Retornando apenas os dados seguros
       return res.status(201).json({
         id: user.id,
-        nome: user.nome,
+        name: user.name,
         email: user.email,
         admin: user.admin,
       });
     } catch (error) {
+      console.error(error); // log no backend para debugging
       return res.status(500).json({ error: "Erro interno ao criar usuário" });
     }
   }
