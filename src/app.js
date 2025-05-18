@@ -1,3 +1,9 @@
+// aqui é o arquivo principal da aplicação
+// src/app.js
+// Importando as dependências necessárias
+// src/app.js
+
+// Importando o express para criar o servidor
 import express from "express";
 import routes from "./routes"; // 👈 Importar as rotas
 import "./database"; // 👈 Garante conexão com o banco

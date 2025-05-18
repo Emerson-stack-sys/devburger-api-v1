@@ -1,41 +1,62 @@
-import bcrypt from "bcryptjs";
+import { v4 } from "uuid";
+
+import * as Yup from "yup";
+
 import User from "../models/User";
 
 class UserController {
   async store(req, res) {
+    const schema = Yup.object({
+      name: Yup.string().required(),
+      email: Yup.string().email().required(),
+      password: Yup.string().min(6).required(),
+      admin: Yup.boolean(),
+    });
+
     try {
-      // Desestruturação correta com os mesmos nomes usados no Model
-      const { name, email, password, admin } = req.body;
+      schema.validateSync(req.body, { abortEarly: false });
+    } catch (err) {
+      return res.status(400).json({ error: err.errors });
+    }
 
-      // Verificando se o usuário já existe no banco
-      const userExists = await User.findOne({ where: { email } });
-      if (userExists) {
-        return res.status(400).json({ error: "Usuário já existe" });
-      }
+    const { name, email, password, admin } = req.body;
 
-      // Criptografando a senha antes de salvar
-      const hashedPassword = await bcrypt.hash(password, 8); // 8 salt rounds
+    const userExists = await User.findOne({
+      where: {
+        email,
+      },
+    });
 
-      // Criando o novo usuário com os campos corretos conforme definidos no Model
-      const user = await User.create({
-        name, // corresponde ao campo 'name' no model
-        email, // corresponde ao campo 'email' no model
-        password_hash: hashedPassword, // corresponde ao campo 'password_hash'
-        admin, // corresponde ao campo 'admin' no model
+    if (userExists) {
+      return res.status(400).json({ error: "User already exists" });
+    }
+
+    const user = await User.create({
+      id: v4(),
+      name,
+      email,
+      password,
+      admin,
+    });
+
+    return res.status(201).json({
+      id: user.id,
+      name,
+      email,
+      admin,
+    });
+  }
+  // NOVO MÉTODO GET /users
+  async index(req, res) {
+    try {
+      const users = await User.findAll({
+        attributes: ["id", "name", "email"], // não retorna a senha
       });
-
-      // Retornando apenas os dados seguros
-      return res.status(201).json({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        admin: user.admin,
-      });
+      return res.json(users);
     } catch (error) {
-      console.error(error); // log no backend para debugging
-      return res.status(500).json({ error: "Erro interno ao criar usuário" });
+      return res.status(500).json({ error: "Erro ao buscar usuários" });
     }
   }
 }
-
 export default new UserController();
+// export default new UserController();
