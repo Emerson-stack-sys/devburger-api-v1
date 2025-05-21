@@ -7,6 +7,7 @@
 import express from "express";
 import routes from "./routes"; // 👈 Importar as rotas
 import "./database"; // 👈 Garante conexão com o banco
+import { resolve } from "node:path"; // 👈 Importar o resolve para resolver caminhos
 
 class App {
   constructor() {
@@ -17,7 +18,11 @@ class App {
   }
 
   middleware() {
-    this.app.use(express.json()); // Permite enviar JSON no corpo da requisição
+    this.app.use(express.json()); // Permite enviar JSON no corpo da requisição middleware
+    this.app.use(
+      "/product-file",
+      express.static(resolve(__dirname, "..", "uploads"))
+    ); // Permite acessar arquivos estáticos na pasta tmp
   }
 
   routes() {
