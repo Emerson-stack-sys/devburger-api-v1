@@ -1,8 +1,5 @@
-// neste arquivo, vamos criar as rotas da nossa aplicação
-// mapear as rotas para os controllers
-// importar o sequelise para conectar ao banco de dados
-
 import Sequelize from "sequelize";
+import mongoose from "mongoose";
 
 import configDatabase from "../config/database";
 
@@ -15,14 +12,29 @@ const models = [User, Product, Category];
 class Database {
   constructor() {
     this.init();
+    this.mongo();
   }
 
   init() {
     this.connection = new Sequelize(configDatabase);
-    models.map((model) => model.init(this.connection))
-    .map( 
-    (model) => model.associate && model.associate(this.connection.models),
-  );
+
+    models
+      .map((model) => model.init(this.connection))
+      .map((model) =>
+        model.associate ? model.associate(this.connection.models) : null
+      );
+  }
+
+  async mongo() {
+    try {
+      await mongoose.connect("mongodb://127.0.0.1:27017/devburger", {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
+      console.log(" MongoDB conectado com sucesso!");
+    } catch (error) {
+      console.error(" Erro ao conectar no MongoDB:", error);
+    }
   }
 }
 
