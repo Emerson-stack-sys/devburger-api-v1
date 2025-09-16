@@ -8,11 +8,13 @@ import express from "express";
 import routes from "./routes"; // 👈 Importar as rotas
 import "./database"; // 👈 Garante conexão com o banco
 import { resolve } from "node:path"; // 👈 Importar o resolve para resolver caminhos
+import cors from 'cors';
 
 class App {
   constructor() {
     this.app = express();
 
+    this.app.use(cors());
     this.middleware();
     this.routes(); // Chama a função de rotas
   }
@@ -21,6 +23,10 @@ class App {
     this.app.use(express.json()); // Permite enviar JSON no corpo da requisição middleware
     this.app.use(
       "/product-file",
+      express.static(resolve(__dirname, "..", "uploads"))
+    ); // Permite acessar arquivos estáticos na pasta tmp
+    this.app.use(
+      "/category-file",
       express.static(resolve(__dirname, "..", "uploads"))
     ); // Permite acessar arquivos estáticos na pasta tmp
   }

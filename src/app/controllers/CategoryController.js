@@ -8,31 +8,91 @@ class CategoryController {
       name: Yup.string().required(),
     });
 
+    console.log("REQ.BODY:", req.body);
+    console.log("REQ.FILE:", req.file);
+
     try {
-      // Valida o corpo da requisição
       await schema.validate(req.body, { abortEarly: false });
 
-      // Busca o usuário e verifica se é admin
       const user = await User.findByPk(req.userId);
       if (!user || !user.admin) {
         return res.status(403).json({ error: "Access denied" });
       }
 
+      if (!req.file) {
+        return res.status(400).json({ error: "Arquivo é obrigatório." });
+      }
+
+      const { filename: path } = req.file;
       const { name } = req.body;
 
-      // Verifica se a categoria já existe
       const categoryExists = await Category.findOne({ where: { name } });
       if (categoryExists) {
         return res.status(400).json({ error: "Category already exists" });
       }
 
-      // Cria nova categoria
-      const category = await Category.create({ name });
+      const category = await Category.create({ name, path });
 
-      return res.status(201).json({ id: category.id, name: category.name });
+      return res.status(201).json({
+        id: category.id,
+        name: category.name,
+        url: category.url, // virtual field que monta a URL da imagem
+      });
     } catch (err) {
-      // Lida com erro de validação ou erro interno
-      console.error(err); // Para debug
+      console.error(err);
+      return res.status(500).json({
+        error: "Internal server error",
+        details: err.errors || err.message,
+      });
+    }
+  }
+
+  async update(req, res) {
+    const schema = Yup.object({
+      name: Yup.string(),
+    });
+
+    try {
+      await schema.validate(req.body, { abortEarly: false });
+
+      const user = await User.findByPk(req.userId);
+      if (!user || !user.admin) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const { id } = req.params;
+      const category = await Category.findByPk(id);
+
+      if (!category) {
+        return res.status(404).json({ error: "Category not found" });
+      }
+
+      const { name } = req.body;
+
+      if (name && name !== category.name) {
+        const categoryExists = await Category.findOne({ where: { name } });
+        if (categoryExists) {
+          return res.status(400).json({ error: "Category already exists" });
+        }
+      }
+
+      if (req.file) {
+        category.path = req.file.filename;
+      }
+
+      if (name) {
+        category.name = name;
+      }
+
+      await category.save();
+
+      return res.json({
+        id: category.id,
+        name: category.name,
+        url: category.url,
+      });
+    } catch (err) {
+      console.error(err);
       return res.status(500).json({
         error: "Internal server error",
         details: err.errors || err.message,
