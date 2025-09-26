@@ -5,16 +5,18 @@
 
 // Importando o express para criar o servidor
 import express from "express";
-import routes from "./routes"; // 👈 Importar as rotas
-import "./database"; // 👈 Garante conexão com o banco
+import routes from "./routes.js"; // 👈 Importar as rotas
+import "./database/index.js"; // 👈 Garante conexão com o banco
 import { resolve } from "node:path"; // 👈 Importar o resolve para resolver caminhos
-import cors from 'cors';
+
+
+import cors from 'cors'; // 👈 Importar o cors para permitir requisições de diferentes origens
 
 class App {
   constructor() {
     this.app = express();
 
-    this.app.use(cors());
+    this.app.use(cors()); // 👈 Usar o cors como middleware
     this.middleware();
     this.routes(); // Chama a função de rotas
   }
