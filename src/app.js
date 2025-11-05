@@ -8,8 +8,6 @@ import express from "express";
 import routes from "./routes.js"; // 👈 Importar as rotas
 import "./database/index.js"; // 👈 Garante conexão com o banco
 import { resolve } from "node:path"; // 👈 Importar o resolve para resolver caminhos
-
-
 import cors from 'cors'; // 👈 Importar o cors para permitir requisições de diferentes origens
 
 class App {

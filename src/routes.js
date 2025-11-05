@@ -13,13 +13,13 @@ const routes = new Router();
 const upload = multer(uploadConfig);
 
 // Rotas públicas
-routes.post("/users", UserController.store);
+routes.post("/users", UserController.store);  // rotas do cadastro de usuários
 routes.post("/sessions", SessionController.store); // padronizado para plural
 
 // Middleware de autenticação
-routes.use(authMiddleware);
+routes.use(authMiddleware);  // todas as rotas abaixo dessa linha estarão protegidas pelo Express middleware ToKen
 
-// Rotas protegidas
+// Rotas protegidas por express middleware ToKen
 routes.post("/products", upload.single("file"), ProductController.store);
 routes.get("/products", ProductController.index);
 routes.put("/products/:id", upload.single("file"), ProductController.update);
